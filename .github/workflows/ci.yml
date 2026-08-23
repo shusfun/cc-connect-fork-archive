@@ -19,14 +19,14 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.32.1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: web/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Build web assets
         working-directory: web
@@ -81,14 +81,14 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.32.1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-          cache-dependency-path: web/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Build web assets
         working-directory: web
@@ -105,14 +105,14 @@ jobs:
       - name: Download dependencies
         run: go mod download
         env:
-          GOPROXY: https://proxy.golang.org,direct
+          GOPROXY: https://goproxy.cn
           GOSUMDB: sum.golang.org
           GONOSUMDB: ""
 
       - name: Verify module checksums
         run: go mod verify
         env:
-          GOPROXY: https://proxy.golang.org,direct
+          GOPROXY: https://goproxy.cn
           GOSUMDB: sum.golang.org
           GONOSUMDB: ""
 
