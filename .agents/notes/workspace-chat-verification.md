@@ -15,6 +15,7 @@
 
 ## 已核验的环境型失败
 
+- `actions/setup-go` 的 `go-version-file: go.mod` 使用 `go` 指令，不会按 `toolchain` 指令安装版本；两者 patch 不同时会污染构建缓存。不要把 `go` 与 `toolchain` 改成相同 patch，因为 `go mod tidy` 会删除冗余的 `toolchain`；CI 应显式安装根 `toolchain` 声明的版本。
 - `agent/acp` 的 `TestCursorCLI_ACPHandshake` 需要本机 Cursor Agent 登录。
 - `agent/cursor` 的 `TestFetchModelsFromAgentCLI` 依赖本机 Cursor CLI 模型枚举。
 - macOS 上 `daemon` 的 launchd 状态和文件模式测试受当前用户域及外置卷权限语义影响。
