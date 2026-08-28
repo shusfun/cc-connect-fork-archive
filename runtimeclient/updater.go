@@ -134,7 +134,23 @@ func (m *UpdateManager) Activate(_ context.Context, tag string) error {
 		return fmt.Errorf("runtime updater: resolve current release: %w", err)
 	}
 	if sameRuntimeFile(current, target) {
-		return errors.New("runtime updater: target release is already active")
+		record, err := m.readActivation()
+		if err != nil {
+			return err
+		}
+		if record != nil {
+			if record.TargetTag != strings.TrimSpace(tag) || !sameRuntimeFile(record.TargetDirectory, target) {
+				return errors.New("runtime updater: pending activation does not match active target")
+			}
+			m.requestRestartLocked()
+			return nil
+		}
+		record = &runtimeActivationRecord{Version: runtimeActivationVersion, TargetTag: tag, TargetDirectory: target, PreviousDirectory: target, CreatedAt: time.Now().UTC()}
+		if err := m.writeActivation(*record); err != nil {
+			return err
+		}
+		m.requestRestartLocked()
+		return nil
 	}
 	record := runtimeActivationRecord{Version: runtimeActivationVersion, TargetTag: tag, TargetDirectory: target, PreviousDirectory: current, CreatedAt: time.Now().UTC()}
 	if err := m.writeActivation(record); err != nil {
