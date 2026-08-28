@@ -48,7 +48,7 @@ systemd 模式下 DeploymentManager 锁定 Release 和机器级执行槽，再�
 
 候选 control 恢复 Runtime 连接并确认激活；Runtime 在确认前保留本地 watchdog。候选健康后提交 run 并删除 activation；候选失败时稳定 helper 恢复旧槽、数据库和 Runtime。Docker 通道使用独立 `container-activation.json`，由 deploy-host 切换已验证 digest 并在超时后恢复 previous 状态。
 
-Runtime 关闭只结束代理连接和 task 观察，不关闭 Codex App 或任务。App Socket 断开、Runtime 更新和 worker 退出都由 Node supervisor 统一清理旧代，再从 `current` Release 建立新代际；终端 `SIGHUP` 不结束 supervisor。control 只把设备标为离线，不能启动替代 writer。
+Runtime 关闭只结束代理连接和 task 观察，不关闭 Codex App 或任务。App Socket 断开、Runtime 更新和 worker 退出都由 Node supervisor 统一清理旧代，再从 `current` Release 建立新代际；终端 `SIGHUP` 不结束 supervisor。Runtime 激活按目标 tag 幂等：重复请求或目标已是 `current` 时仍建立或复用 pending activation，并通过同一 confirm/rollback 生命周期收口。control 只把设备标为离线，不能启动替代 writer。
 
 ## 架构风险目录
 

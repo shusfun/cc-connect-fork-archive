@@ -60,10 +60,13 @@ func TestUpdateManagerStagesSignedRuntimeAndAtomicallyActivates(t *testing.T) {
 	if err := manager.Activate(context.Background(), "v0.1.0"); err != nil {
 		t.Fatal(err)
 	}
+	if err := manager.Activate(context.Background(), "v0.1.0"); err != nil {
+		t.Fatalf("duplicate activation failed: %v", err)
+	}
 	select {
 	case <-manager.RestartRequested():
 	case <-time.After(2 * time.Second):
-		t.Fatal("activation did not request launchd restart")
+		t.Fatal("activation did not request supervisor restart")
 	}
 	candidate, err := NewUpdateManager(UpdateManagerConfig{StateDirectory: state, ReleaseClient: releases, RollbackTimeout: 2 * time.Second})
 	if err != nil {
@@ -71,6 +74,25 @@ func TestUpdateManagerStagesSignedRuntimeAndAtomicallyActivates(t *testing.T) {
 	}
 	if err := candidate.Confirm(context.Background(), "v0.1.0"); err != nil {
 		t.Fatal(err)
+	}
+	alreadyActive, err := NewUpdateManager(UpdateManagerConfig{StateDirectory: state, ReleaseClient: releases})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := alreadyActive.Activate(context.Background(), "v0.1.0"); err != nil {
+		t.Fatalf("already-active release was not accepted: %v", err)
+	}
+	select {
+	case <-alreadyActive.RestartRequested():
+	case <-time.After(2 * time.Second):
+		t.Fatal("already-active release did not request supervisor restart")
+	}
+	alreadyActiveCandidate, err := NewUpdateManager(UpdateManagerConfig{StateDirectory: state, ReleaseClient: releases, RollbackTimeout: 2 * time.Second})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := alreadyActiveCandidate.Confirm(context.Background(), "v0.1.0"); err != nil {
+		t.Fatalf("already-active release could not be confirmed: %v", err)
 	}
 	resolved, err := filepath.EvalSymlinks(filepath.Join(state, "current"))
 	if err != nil || filepath.Base(resolved) != "v0.1.0" {
